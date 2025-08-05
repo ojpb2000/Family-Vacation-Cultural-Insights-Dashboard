@@ -60,8 +60,9 @@ This dashboard presents a comprehensive analysis of family vacation content from
 ## 🚀 How to Use
 
 ### Opening the Dashboard
-1. Open `family_vacation_dashboard_advanced.html` in any modern web browser
-2. The dashboard loads automatically with all data and visualizations
+1. **Online (Recommended)**: Visit the live dashboard at: https://ojpb2000.github.io/Family-Vacation-Cultural-Insights-Dashboard/
+2. **Local**: Open `family_vacation_dashboard_advanced.html` in any modern web browser
+3. The dashboard loads automatically with all data and visualizations
 
 ### Navigation
 - **Key Insights Tab**: Deep cultural analysis with 11 major patterns
@@ -80,9 +81,24 @@ This dashboard presents a comprehensive analysis of family vacation content from
 Family-Vacation-Cultural-Insights-Dashboard/
 ├── family_vacation_dashboard_advanced.html    # Main dashboard file
 ├── video_data_improved.js                    # Complete video dataset (379 videos)
+├── index.html                                # Landing page with auto-redirect
 ├── README.md                                 # This documentation
-└── assets/                                   # Additional resources (if any)
+├── CHANGELOG.md                             # Development history
+├── .nojekyll                                # GitHub Pages configuration
+└── .github/workflows/deploy.yml             # GitHub Actions deployment
 ```
+
+## 🌐 GitHub Pages Deployment
+
+The dashboard is automatically deployed to GitHub Pages and available at:
+**https://ojpb2000.github.io/Family-Vacation-Cultural-Insights-Dashboard/**
+
+### Deployment Features:
+- ✅ **Automatic deployment** on every push to main branch
+- ✅ **Static site hosting** with fast loading times
+- ✅ **Mobile responsive** design
+- ✅ **Direct access** to all dashboard features
+- ✅ **No server setup** required
 
 ## 🔬 Research Methodology
 
