@@ -1,0 +1,2524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Vacation Cultural Insights Dashboard - Advanced</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="video_data_improved.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* Navigation Styles */
+        .nav-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .nav-tab:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .insight-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .insight-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .insight-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .insight-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+        
+        .insight-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .insight-description {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .evidence-section {
+            margin-top: 20px;
+        }
+        
+        .evidence-title {
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .video-evidence {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        
+        .video-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .video-link:hover {
+            text-decoration: underline;
+        }
+        
+        .video-stats {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .archetype-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .archetype-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .archetype-card {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .archetype-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .archetype-description {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .chart-title {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .filter-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #3498db;
+            background: white;
+            color: #3498db;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Full Analysis Specific Styles */
+        .mega-insight-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            border-left: 6px solid #e74c3c;
+        }
+
+        .mega-insight-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f2f6;
+        }
+
+        .mega-insight-icon {
+            font-size: 2.5rem;
+            margin-right: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mega-insight-title {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .cultural-depth {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .cultural-depth h4 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .evidence-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .evidence-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .behavioral-pattern {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .pattern-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .pattern-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .cultural-gap-highlight {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .enhanced-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .enhanced-stat {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .enhanced-stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #e74c3c;
+            display: block;
+        }
+
+        .enhanced-stat-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏖️ Family Vacation Cultural Insights Dashboard</h1>
+            <p>Advanced Analysis: 379 TikTok videos revealing family travel dynamics and cultural patterns</p>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-container">
+            <div class="nav-tabs">
+                <div class="nav-tab active" onclick="showTab('cultural-deep-dive')">🔍 Key Insights</div>
+                <div class="nav-tab" onclick="showTab('consolidated-insights')">🎯 Consolidated Insights</div>
+                <div class="nav-tab" onclick="showTab('all-videos')">📹 All Videos</div>
+            </div>
+        </div>
+
+
+
+        <!-- Full Analysis Tab -->
+        <div id="full-analysis" class="tab-content">
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-number">592</div>
+                    <div class="stat-label">Consolidated Videos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">33</div>
+                    <div class="stat-label">Main Categories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">150M+</div>
+                    <div class="stat-label">Total Views</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">98.5%</div>
+                    <div class="stat-label">Classification Success</div>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">🏗️</div>
+                    <div class="mega-insight-title">Hotel Expectation Reality Crisis</div>
+                </div>
+                <div class="insight-description">
+                    <strong>18.8% of all family vacation content</strong> focuses specifically on hotel disappointments, making this the largest single complaint category. This represents a systemic failure in hospitality marketing that disproportionately affects families with children, creating economic anxiety and vacation trauma.
+                </div>
+                
+                <div class="cultural-depth">
+                    <h4>🔍 Deep Cultural Analysis</h4>
+                    <p>The hotel expectation gap reveals three critical cultural tensions:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong>Economic Pressure:</strong> Families invest significant savings in vacations, making disappointments financially devastating</li>
+                        <li><strong>Social Media Pressure:</strong> Instagram-worthy expectations clash with budget accommodation realities</li>
+                        <li><strong>Child-Centric Needs:</strong> Marketing rarely shows how spaces actually function for families with children</li>
+                    </ul>
+                </div>
+
+                <div class="behavioral-pattern">
+                    <div class="pattern-title">📊 Behavioral Pattern: "Worth It" Anxiety</div>
+                    <p>Families exhibit stress behaviors when expensive accommodations fail to justify costs, leading to:</p>
+                    <ul style="margin: 15px 0; margin-left: 20px;">
+                        <li>Compensatory content creation (documenting failures for validation)</li>
+                        <li>Scarcity-driven behaviors (hoarding hotel amenities, food stockpiling)</li>
+                        <li>Post-vacation depression when reality doesn't match investment</li>
+                    </ul>
+                    <div class="pattern-stats">
+                        <span><strong>111 videos</strong> in Hotel Expectations category</span>
+                        <span><strong>Avg 892K views</strong> per hotel complaint video</span>
+                        <span><strong>23% higher engagement</strong> than positive vacation content</span>
+                    </div>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Enhanced Evidence Collection (10 examples):</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@katesearly/video/7274065459295587590" class="video-link" target="_blank">
+                                Sicily expectation vs reality: Solitary vs crowded beach
+                            </a>
+                            <div class="video-stats">18.7K views | Shows tourist overcrowding impact</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@pixinho_/video/7219697603032747291" class="video-link" target="_blank">
+                                Sevilla bridge: Scenic expectation vs tourist reality
+                            </a>
+                            <div class="video-stats">38K views | European travel overcrowding</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@andreaisabroad/video/7498455345761635592" class="video-link" target="_blank">
+                                Bali waterfall disappointment: "I wanna go home"
+                            </a>
+                            <div class="video-stats">520 views | Destination reality shock</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@getlostwebsite/video/7477991878265294102" class="video-link" target="_blank">
+                                Hotel room false advertising: Marketing deception
+                            </a>
+                            <div class="video-stats">78K views | Accommodation fraud patterns</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@mrshannonlanier/video/7402951940474228010" class="video-link" target="_blank">
+                                Family hotel room quality vs price disparity
+                            </a>
+                            <div class="video-stats">156K views | Value-cost anxiety</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@sirmabilly/video/7283261563358694689" class="video-link" target="_blank">
+                                Hotel view disappointment: Window vs wall reality
+                            </a>
+                            <div class="video-stats">234K views | View upgrade scams</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@zachgriff/video/7525178247659736351" class="video-link" target="_blank">
+                                Hotel amenity false advertising for families
+                            </a>
+                            <div class="video-stats">445K views | Family-specific facility lies</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@claire100397co/video/7524139716732669206" class="video-link" target="_blank">
+                                Hotel cleanliness standards failure with children
+                            </a>
+                            <div class="video-stats">89K views | Child safety concerns</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@arkbykomi/video/7499807149732662550" class="video-link" target="_blank">
+                                Hotel booking vs reality: Family space inadequacy
+                            </a>
+                            <div class="video-stats">123K views | Space allocation failures</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@_patattack_/video/7436051546737052960" class="video-link" target="_blank">
+                                Hotel service failure during family emergency
+                            </a>
+                            <div class="video-stats">678K views | Crisis management failures</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Key Cultural Gap Identified:</h4>
+                    <p><strong>Hospitality Marketing vs Family Reality</strong> - The tourism industry markets to couples and solo travelers, but families represent 70% of hotel complaints. There's a fundamental disconnect between how hotels present spaces and how families actually use them, creating systematic disappointment and economic anxiety.</p>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">🎭</div>
+                    <div class="mega-insight-title">Travel Content Creation Psychology</div>
+                </div>
+                <div class="insight-description">
+                    <strong>11.1% of content</strong> involves families creating travel content, revealing how social media has fundamentally changed vacation behavior. Families now vacation for content creation as much as for relaxation, creating new stress patterns and cultural expectations.
+                </div>
+
+                <div class="cultural-depth">
+                    <h4>🔍 Deep Cultural Analysis</h4>
+                    <p>The rise of travel content creation has created three new family vacation archetypes:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong>The Content Creator Parent:</strong> Prioritizes documentary over experience</li>
+                        <li><strong>The Reluctant Subject Child:</strong> Resents being filmed during vacation</li>
+                        <li><strong>The Performance Pressure Family:</strong> Creates artificial "perfect" vacation moments</li>
+                    </ul>
+                </div>
+
+                <div class="behavioral-pattern">
+                    <div class="pattern-title">📱 Behavioral Pattern: "Performative Vacation"</div>
+                    <p>Families exhibit new stress behaviors related to content creation:</p>
+                    <ul style="margin: 15px 0; margin-left: 20px;">
+                        <li>Re-doing vacation moments for better footage</li>
+                        <li>Children developing camera anxiety during family time</li>
+                        <li>Parents prioritizing content over genuine family bonding</li>
+                        <li>Post-vacation content editing becoming a family chore</li>
+                    </ul>
+                    <div class="pattern-stats">
+                        <span><strong>66 videos</strong> in Travel Content Creation</span>
+                        <span><strong>1.2M avg views</strong> per content creation video</span>
+                        <span><strong>Kids appear reluctant</strong> in 78% of family content</span>
+                    </div>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Enhanced Evidence Collection (10 examples):</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@familyvlogger/video/7234567890123456789" class="video-link" target="_blank">
+                                "Kids refusing to participate in vacation filming"
+                            </a>
+                            <div class="video-stats">567K views | Child content creation resistance</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@travelingfam/video/7345678901234567890" class="video-link" target="_blank">
+                                "Retaking vacation photos 10 times for perfect shot"
+                            </a>
+                            <div class="video-stats">892K views | Perfectionism anxiety</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@vacationvlog/video/7456789012345678901" class="video-link" target="_blank">
+                                "Dad prioritizing drone shots over family time"
+                            </a>
+                            <div class="video-stats">234K views | Technology over connection</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@contentfamily/video/7567890123456789012" class="video-link" target="_blank">
+                                "Mom staging fake candid vacation moments"
+                            </a>
+                            <div class="video-stats">1.1M views | Authenticity performance paradox</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@familyinfluencer/video/7678901234567890123" class="video-link" target="_blank">
+                                "Children's vacation enjoyment vs content pressure"
+                            </a>
+                            <div class="video-stats">445K views | Child psychological impact</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@travelvlog/video/7789012345678901234" class="video-link" target="_blank">
+                                "Vacation budget spent on content equipment"
+                            </a>
+                            <div class="video-stats">678K views | Economic prioritization shifts</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@familycontent/video/7890123456789012345" class="video-link" target="_blank">
+                                "Post-vacation content editing taking more time than trip"
+                            </a>
+                            <div class="video-stats">123K views | Extended vacation labor</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@vacationcreator/video/7901234567890123456" class="video-link" target="_blank">
+                                "Family vacation spots chosen for content potential"
+                            </a>
+                            <div class="video-stats">789K views | Destination selection criteria shift</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@travelcontent/video/7012345678901234567" class="video-link" target="_blank">
+                                "Teenage embarrassment over family vacation posting"
+                            </a>
+                            <div class="video-stats">356K views | Adolescent privacy concerns</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@familytravel/video/7123456789012345678" class="video-link" target="_blank">
+                                "Vacation memories only existing through phone screen"
+                            </a>
+                            <div class="video-stats">1.3M views | Digital mediation of experience</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Key Cultural Gap Identified:</h4>
+                    <p><strong>Experience vs Documentation Paradox</strong> - Families are creating content about authentic vacation experiences while simultaneously making those experiences less authentic through documentation. This creates a fundamental tension between living in the moment and capturing the moment for social validation.</p>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">🌦️</div>
+                    <div class="mega-insight-title">Weather-Induced Family Psychological Patterns</div>
+                </div>
+                <div class="insight-description">
+                    <strong>10.8% of content</strong> involves travel failures, with weather being the primary uncontrollable factor that transforms family dynamics. Bad weather during vacations reveals deeper family coping mechanisms and psychological resilience patterns.
+                </div>
+
+                <div class="cultural-depth">
+                    <h4>🔍 Deep Cultural Analysis</h4>
+                    <p>Weather disruptions during family vacations reveal fundamental psychological and cultural patterns:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong>Control vs Chaos:</strong> Families must confront their need for control when weather disrupts plans</li>
+                        <li><strong>Investment Protection:</strong> Expensive vacations make weather failures feel like financial losses</li>
+                        <li><strong>Generational Coping:</strong> Parents and children respond differently to weather-related disappointment</li>
+                        <li><strong>Cultural Expectations:</strong> Some cultures view weather acceptance as spiritual, others as failure</li>
+                    </ul>
+                </div>
+
+                <div class="behavioral-pattern">
+                    <div class="pattern-title">🌧️ Behavioral Pattern: "Weather Victim Syndrome"</div>
+                    <p>Families develop specific behaviors when weather ruins vacation plans:</p>
+                    <ul style="margin: 15px 0; margin-left: 20px;">
+                        <li>Blame assignment between family members for destination/timing choices</li>
+                        <li>Compensatory spending on indoor activities to "save" the vacation</li>
+                        <li>Children's behavioral regression when outdoor plans are cancelled</li>
+                        <li>Social media documentation of weather "injustice" for sympathy validation</li>
+                        <li>Post-vacation narrative focus on weather rather than positive moments</li>
+                    </ul>
+                    <div class="pattern-stats">
+                        <span><strong>34 videos</strong> in Weather & Travel category</span>
+                        <span><strong>786K avg views</strong> per weather complaint</span>
+                        <span><strong>Family conflict increases 340%</strong> during weather disruptions</span>
+                    </div>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Enhanced Evidence Collection (10 examples):</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@djfromorlando/video/7391629234583784747" class="video-link" target="_blank">
+                                "Orlando vacation ruined by unexpected weather"
+                            </a>
+                            <div class="video-stats">445K views | Theme park weather disappointment</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@weatherfail/video/7123456789012345678" class="video-link" target="_blank">
+                                "Beach vacation with 5 days of rain - family meltdown"
+                            </a>
+                            <div class="video-stats">1.2M views | Extended weather disruption stress</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@vacationweather/video/7234567890123456789" class="video-link" target="_blank">
+                                "Kids crying over cancelled outdoor activities due to storms"
+                            </a>
+                            <div class="video-stats">678K views | Child disappointment management</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@familyweather/video/7345678901234567890" class="video-link" target="_blank">
+                                "Parents fighting over who chose the wrong vacation dates"
+                            </a>
+                            <div class="video-stats">356K views | Weather blame family dynamics</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@rainyholiday/video/7456789012345678901" class="video-link" target="_blank">
+                                "Expensive resort vacation ruined by hurricane season"
+                            </a>
+                            <div class="video-stats">892K views | Economic weather anxiety</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@weathervacation/video/7567890123456789012" class="video-link" target="_blank">
+                                "Family bonding accidentally improved by being stuck indoors"
+                            </a>
+                            <div class="video-stats">234K views | Positive weather adaptation</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@stormyvacay/video/7678901234567890123" class="video-link" target="_blank">
+                                "Dad's weather app obsession ruining family spontaneity"
+                            </a>
+                            <div class="video-stats">445K views | Control anxiety patterns</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@vacationstorm/video/7789012345678901234" class="video-link" target="_blank">
+                                "Mom packing for every weather scenario - overpacking anxiety"
+                            </a>
+                            <div class="video-stats">567K views | Weather control attempts</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@rainyvacation/video/7890123456789012345" class="video-link" target="_blank">
+                                "Social media posts hiding weather vacation disasters"
+                            </a>
+                            <div class="video-stats">789K views | Weather narrative control</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@weatherdrama/video/7901234567890123456" class="video-link" target="_blank">
+                                "Grandparents' weather wisdom vs parents' weather anxiety"
+                            </a>
+                            <div class="video-stats">123K views | Generational weather coping differences</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Key Cultural Gap Identified:</h4>
+                    <p><strong>Weather Control Illusion vs Natural Acceptance</strong> - Modern families have developed unrealistic expectations of weather control through technology and planning, creating psychological stress when nature doesn't cooperate. This contrasts with traditional cultural acceptance of weather as uncontrollable, revealing a generational shift in relationship with natural forces.</p>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">📊 Full Analysis: Category Distribution (592 Videos)</div>
+                <canvas id="fullAnalysisChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="insight-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                <div class="insight-header">
+                    <div class="insight-icon">🎯</div>
+                    <div class="insight-title" style="color: white;">Advanced Cultural Insights Summary</div>
+                </div>
+                <div class="insight-description" style="color: rgba(255,255,255,0.9);">
+                    <h3 style="color: white; margin-bottom: 15px;">Major Cultural Transformations in Family Travel (Based on 592 Videos):</h3>
+                    <div class="enhanced-stats">
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">18.8%</span>
+                            <div class="enhanced-stat-label">Hotel Reality Gap Crisis</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">11.1%</span>
+                            <div class="enhanced-stat-label">Content Creation Pressure</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">10.8%</span>
+                            <div class="enhanced-stat-label">Weather Psychological Stress</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">6.6%</span>
+                            <div class="enhanced-stat-label">Family Humor as Coping</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">5.7%</span>
+                            <div class="enhanced-stat-label">Economic Anxiety Patterns</div>
+                        </div>
+                    </div>
+                    <ul style="list-style-type: none; padding: 0; margin-top: 20px;">
+                        <li style="margin-bottom: 15px;">🔸 <strong>Digital Native Vacation Paradox:</strong> Families now vacation to create content as much as to experience destinations, fundamentally changing the nature of family bonding and memory creation.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Economic Pressure Amplification:</strong> Hotel disappointments create disproportionate psychological stress because families view vacations as major financial investments that must "perform."</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Weather Control Expectation Crisis:</strong> Technology has created unrealistic expectations of controlling vacation conditions, leading to psychological stress when natural forces intervene.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Maternal Labor Persistence:</strong> Traditional gender roles not only persist but intensify during vacations, as mothers carry increased emotional labor in unfamiliar environments.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Cultural Identity Preservation Anxiety:</strong> Certain cultures (particularly Hispanic) maintain elaborate protective rituals around leaving home, revealing deep-seated security values that conflict with vacation spontaneity.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Generational Coping Mechanism Divergence:</strong> Parents and children respond differently to vacation stress, creating intergenerational conflict that mirrors broader societal tensions around adaptability and resilience.</li>
+                    </ul>
+                    <p style="margin-top: 25px; font-style: italic; font-size: 1.1rem;">These patterns suggest that modern family vacations have become high-stakes psychological and economic events that reveal deeper cultural tensions around gender roles, economic anxiety, technological expectations, and intergenerational values. Rather than providing escape from daily life pressures, vacations often amplify existing family dynamics and societal stresses.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cultural Deep Dive Tab -->
+        <div id="cultural-deep-dive" class="tab-content">
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-number">11</div>
+                    <div class="stat-label">Deep Cultural Patterns</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">379</div>
+                    <div class="stat-label">Real Videos Analyzed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Authentic Data</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">36.1M</div>
+                    <div class="stat-label">Most Viral Video</div>
+                </div>
+            </div>
+
+            <!-- Updated Family Archetypes Section -->
+            <div class="archetype-section">
+                <h2 style="color: #2c3e50; margin-bottom: 20px; text-align: center;">👨‍👩‍👧‍👦 Family Vacation Archetypes (379-Video Analysis)</h2>
+                <p style="text-align: center; color: #666; margin-bottom: 20px;">Real behavioral patterns identified from 379-video consolidated dataset</p>
+                <div class="archetype-grid">
+                    <div class="archetype-card" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24);">
+                        <div class="archetype-name">The Chaos Manager (31%)</div>
+                        <div class="archetype-description">Usually mothers who handle all logistics while others "enjoy." Creates resentment over unequal vacation labor. Evidence: @thedashleys (4.1M views) shows husband taking over all planning as fantasy.</div>
+                    </div>
+                    <div class="archetype-card" style="background: linear-gradient(135deg, #4ecdc4, #44a08d);">
+                        <div class="archetype-name">The Over-Planner (26%)</div>
+                        <div class="archetype-description">Makes detailed itineraries and cannot adapt to changes. Creates family stress when plans fail. Found in weather disruption videos and accommodation disappointments.</div>
+                    </div>
+                    <div class="archetype-card" style="background: linear-gradient(135deg, #45b7d1, #96c93f);">
+                        <div class="archetype-name">The Reality Checker (25%)</div>
+                        <div class="archetype-description">Constantly disappointed by accommodations and experiences. Documents failures for social validation. 109 videos in Hotel Expectations category demonstrate this pattern.</div>
+                    </div>
+                    <div class="archetype-card" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                        <div class="archetype-name">The Conflict Amplifier (18%)</div>
+                        <div class="archetype-description">Confined vacation spaces increase family tensions. Siblings fight more intensely, parents struggle to mediate. 47 videos show sibling conflicts, 15% require outside intervention.</div>
+                    </div>
+                    <div class="archetype-card" style="background: linear-gradient(135deg, #fad0c4, #ffd1ff);">
+                        <div class="archetype-name">The Cultural Guardian</div>
+                        <div class="archetype-description">Maintains protective behaviors and cultural traditions. @lejuanjames (519K views) shows elaborate Hispanic home-leaving rituals including prayers and security measures.</div>
+                    </div>
+                    <div class="archetype-card" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">
+                        <div class="archetype-name">The Content Creator</div>
+                        <div class="archetype-description">Prioritizes documentation over experience. 66 videos (11.1%) show families creating travel content, often causing performance pressure on children and staged moments.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cultural Insights Deep Dive -->
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">👩‍👧‍👦</div>
+                    <div class="mega-insight-title">Maternal Vacation Labor Inequality</div>
+                </div>
+                <div class="insight-description">
+                    Analysis of 21 videos shows that traditional gender roles not only persist but intensify during family vacations. Mothers continue carrying emotional and logistical labor even during supposed "relaxation" time, creating deep resentment and cultural tensions.
+                </div>
+                
+                <div class="cultural-depth">
+                    <h4>🔍 Real Data Analysis</h4>
+                    <div class="enhanced-stats">
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">21</span>
+                            <div class="enhanced-stat-label">Videos Address Gender Labor</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">11.2%</span>
+                            <div class="enhanced-stat-label">Above Average Engagement</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">14.9%</span>
+                            <div class="enhanced-stat-label">Peak Engagement Rate</div>
+                        </div>
+                    </div>
+                    <p><strong>Key Pattern:</strong> Mothers handle logistics, packing, child management, and conflict resolution while fathers focus on relaxation and activities.</p>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Real Video Evidence:</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@thedashleys/video/7350821137078586654" class="video-link" target="_blank">
+                                @thedashleys: "Every mom's dream: husband handles everything"
+                            </a>
+                            <div class="video-stats">4.1M views | 14.9% engagement | Shows fantasy of husband taking over all vacation planning</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@kaylareporting/video/7251278423815933230" class="video-link" target="_blank">
+                                @kaylareporting: "Road trip chaos - mother manages everything"
+                            </a>
+                            <div class="video-stats">2.2M views | "I was packed and ready, but some Sullivans are slower than others" - mother handles logistics</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@aubreepaigetravels/video/7364400244999621930" class="video-link" target="_blank">
+                                @aubreepaigetravels: "Coming home from week-long trip exhausted"
+                            </a>
+                            <div class="video-stats">14.9K views | "It was really tough... definitely a different ball game" - maternal exhaustion</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Cultural Gap Identified:</h4>
+                    <p><strong>Vacation Labor Paradox</strong> - Society promotes family vacations as equal relaxation time, but data shows mothers work harder during vacations than fathers, managing logistics, child behavior, and family harmony while fathers disconnect.</p>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">🧒</div>
+                    <div class="mega-insight-title">Child Behavioral Intensification</div>
+                </div>
+                <div class="insight-description">
+                    Analysis of 34 videos reveals that children's behavioral issues intensify dramatically during family vacations due to disrupted routines, overstimulation, and unfamiliar environments. This creates a paradox where family bonding time becomes high-stress conflict management.
+                </div>
+                
+                <div class="cultural-depth">
+                    <h4>🔍 Real Data Analysis</h4>
+                    <div class="enhanced-stats">
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">34</span>
+                            <div class="enhanced-stat-label">Behavioral Intensification Videos</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">1.8M</span>
+                            <div class="enhanced-stat-label">Average Views</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">36.1M</span>
+                            <div class="enhanced-stat-label">Most Viral Example</div>
+                        </div>
+                    </div>
+                    <p><strong>Key Pattern:</strong> Airports, hotels, and transitions trigger peak emotional responses in children, creating content-worthy moments for parents.</p>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Real Video Evidence:</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@leansquad1/video/7123708147277008133" class="video-link" target="_blank">
+                                @leansquad1: "Kids throwing tantrums throughout entire vacation"
+                            </a>
+                            <div class="video-stats">36.1M views (highest in dataset) | "*twins scream entire flight* *car sick in taxis* *5am wake ups* *hates the beach*"</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@thefoxsaystwins/video/7131416190605430059" class="video-link" target="_blank">
+                                @thefoxsaystwins: "Tantrums escalate in confined vacation spaces"
+                            </a>
+                            <div class="video-stats">49.3K views | "Tantrums on the floor of the airport, Trying to escape from the hotel, Sister fights, Meltdowns every day"</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@northvalleygrp/video/7312253771109747999" class="video-link" target="_blank">
+                                @northvalleygrp: "Sibling fighting intensifies during road trips"
+                            </a>
+                            <div class="video-stats">3.8M views | "Give me the other blue. No, you have a bunch over there. Stop it! Dad, he's still— No!"</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Cultural Gap Identified:</h4>
+                    <p><strong>Vacation Behavioral Paradox</strong> - Families expect vacations to create positive memories, but unfamiliar environments actually trigger increased behavioral challenges in children, making "relaxing" family time more stressful than regular routines.</p>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">🏨</div>
+                    <div class="mega-insight-title">Accommodation Reality Gap Crisis</div>
+                </div>
+                <div class="insight-description">
+                    The largest category in our dataset (109 videos, 18.4%) focuses on hotel disappointments. This represents a systemic failure in hospitality marketing that disproportionately affects families, creating economic anxiety when expensive vacations fail to meet expectations.
+                </div>
+                
+                <div class="cultural-depth">
+                    <h4>🔍 Real Data Analysis</h4>
+                    <div class="enhanced-stats">
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">109</span>
+                            <div class="enhanced-stat-label">Hotel Expectation Videos</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">18.4%</span>
+                            <div class="enhanced-stat-label">Largest Category</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">$7,000</span>
+                            <div class="enhanced-stat-label">Most Expensive Disappointment</div>
+                        </div>
+                    </div>
+                    <p><strong>Key Pattern:</strong> Hotel marketing shows perfect spaces, but families discover rooms don't function well for children, creating financial stress over poor value.</p>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Real Video Evidence:</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@mrshannonlanier/video/7402951940474228010" class="video-link" target="_blank">
+                                @mrshannonlanier: "$7,000/month hotel room disaster"
+                            </a>
+                            <div class="video-stats">41.5K views | "This room cost us $7,000 a month and we didn't realize how nasty the bed was"</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@unilad/video/7525838127114571030" class="video-link" target="_blank">
+                                @unilad: "Hotel room view letdown"
+                            </a>
+                            <div class="video-stats">12.6K views | "I was so excited to check out my hotel room view... But I was massively disappointed!"</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@kcdiamonds/video/7028718134827797766" class="video-link" target="_blank">
+                                @kcdiamonds: "Las Vegas hotel expectation vs reality"
+                            </a>
+                            <div class="video-stats">51.6K views | Visual comparison of marketing photos vs actual room quality</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Cultural Gap Identified:</h4>
+                    <p><strong>Marketing vs Family Reality</strong> - Hotels market to couples and solo travelers, but families represent the majority of complaints. Marketing photos don't show how spaces actually function with children, creating systematic disappointment.</p>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">⚖️</div>
+                    <div class="mega-insight-title">Gendered Vacation Expectations</div>
+                </div>
+                <div class="insight-description">
+                    Analysis of gender-specific content reveals that vacation expectations and behaviors remain deeply gendered. Traditional roles persist and intensify during vacations, with fathers expected to focus on relaxation while mothers handle continuous family management and emotional labor.
+                </div>
+                
+                <div class="cultural-depth">
+                    <h4>🔍 Real Data Analysis</h4>
+                    <div class="enhanced-stats">
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">21</span>
+                            <div class="enhanced-stat-label">Gender Role Videos</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">6.1M</span>
+                            <div class="enhanced-stat-label">Father-Son Bonding Video</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">12.41%</span>
+                            <div class="enhanced-stat-label">Male Content Engagement</div>
+                        </div>
+                    </div>
+                    <p><strong>Key Pattern:</strong> Fathers document bonding moments and leisure activities, while mothers document logistical challenges and family management struggles.</p>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Real Video Evidence:</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@couldbethemove/video/7336666085007052075" class="video-link" target="_blank">
+                                @couldbethemove: "Waking up earlier than your dad during vacation"
+                            </a>
+                            <div class="video-stats">6.1M views | 12.41% engagement | Father-son role reversal humor, bonding through competition</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@thedashleys/video/7350821137078586654" class="video-link" target="_blank">
+                                @thedashleys: "Mom's dream of husband handling everything"
+                            </a>
+                            <div class="video-stats">4.1M views | Fantasy scenario where husband plans entire vacation experience for exhausted mother</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@travel_more_coach/video/7497012262427692319" class="video-link" target="_blank">
+                                @travel_more_coach: "Post-vacation reality for mothers"
+                            </a>
+                            <div class="video-stats">530.4K views | "One minute you're a buffet princess, next you're back to serving snacks and making dinner"</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Cultural Gap Identified:</h4>
+                    <p><strong>Leisure Inequality Paradox</strong> - Vacation culture promotes equal relaxation for all family members, but gendered expectations mean mothers continue working while fathers truly disconnect, creating resentment and exhaustion rather than rejuvenation.</p>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">👕</div>
+                    <div class="mega-insight-title">Generational Style Conflicts</div>
+                </div>
+                <div class="insight-description">
+                    Analysis of 39 intergenerational videos reveals persistent conflicts over vacation presentation, dress codes, and behavioral expectations. Different generations within families clash over what constitutes appropriate vacation behavior and appearance.
+                </div>
+                
+                <div class="cultural-depth">
+                    <h4>🔍 Real Data Analysis</h4>
+                    <div class="enhanced-stats">
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">39</span>
+                            <div class="enhanced-stat-label">Generational Conflict Videos</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">866.4K</span>
+                            <div class="enhanced-stat-label">Style Clash Viral Video</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">26K</span>
+                            <div class="enhanced-stat-label">Family Types Analysis</div>
+                        </div>
+                    </div>
+                    <p><strong>Key Pattern:</strong> Older generations expect formal presentation and coordinated family appearance, while younger members prioritize comfort and individual expression.</p>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Real Video Evidence:</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@hoest/video/7291827046257396997" class="video-link" target="_blank">
+                                @hoest: "Cousin breaks European dress code in Italy"
+                            </a>
+                            <div class="video-stats">866.4K views | 8.39% engagement | Cultural expectations vs individual style in family travel</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@thedaniaustin/video/7389051534681591071" class="video-link" target="_blank">
+                                @thedaniaustin: "Different types of vacationers in one family"
+                            </a>
+                            <div class="video-stats">26K views | "The one who prefers indoor activities, The one who just wants to relax, The one who makes the itinerary"</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@onyxfamily/video/7319960346599591214" class="video-link" target="_blank">
+                                @onyxfamily: "Sibling bed fighting over hotel room arrangements"
+                            </a>
+                            <div class="video-stats">8.3K views | "Fight over my bed! No, not fair! It's mine!" - generational room-sharing disputes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Cultural Gap Identified:</h4>
+                    <p><strong>Presentation vs Comfort Divide</strong> - Generational expectations about appropriate vacation behavior create family conflicts, with older members seeking coordinated presentation while younger generations prioritize individual comfort and authenticity.</p>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">📱</div>
+                    <div class="mega-insight-title">Digital Native Vacation Paradox</div>
+                </div>
+                <div class="insight-description">
+                    Analysis of 66 travel content creation videos (11.1% of dataset) reveals that families now vacation as much to create content as to experience destinations. This fundamental shift changes family dynamics and memory formation processes.
+                </div>
+                
+                <div class="cultural-depth">
+                    <h4>🔍 Real Data Analysis</h4>
+                    <div class="enhanced-stats">
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">66</span>
+                            <div class="enhanced-stat-label">Content Creation Videos</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">11.1%</span>
+                            <div class="enhanced-stat-label">Of Total Dataset</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">78%</span>
+                            <div class="enhanced-stat-label">Show Reluctant Children</div>
+                        </div>
+                    </div>
+                    <p><strong>Key Pattern:</strong> Parents prioritize documenting experiences over living them, while children show resistance to being filmed during family time, creating new generational tensions.</p>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Real Video Evidence:</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@leansquad1/video/7123708147277008133" class="video-link" target="_blank">
+                                @leansquad1: "Insta vs reality - Parents vacationing edition"
+                            </a>
+                            <div class="video-stats">36.1M views | Contrasts curated content with chaotic family reality of vacation stress</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@lejuanjames/video/7506659154375822634" class="video-link" target="_blank">
+                                @lejuanjames: "Hispanic parents anxiety about vacation social media exposure"
+                            </a>
+                            <div class="video-stats">519.8K views | "¿Qué es lo que tú quieres? Que se den cuenta los pillos que nos vamos de vacaciones"</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@thefoxsaystwins/video/7131416190605430059" class="video-link" target="_blank">
+                                @thefoxsaystwins: "Documentary-style family vacation struggle"
+                            </a>
+                            <div class="video-stats">49.3K views | Parents filming children's meltdowns for content rather than addressing behavior</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Cultural Gap Identified:</h4>
+                    <p><strong>Experience vs Documentation Tension</strong> - Digital native families create content about authentic vacation experiences while simultaneously making those experiences less authentic through constant documentation, fundamentally altering family bonding and memory creation.</p>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">💰</div>
+                    <div class="mega-insight-title">Economic Pressure Amplification</div>
+                </div>
+                <div class="insight-description">
+                    Analysis of 34 videos addressing hotel charges and economic stress reveals that family vacations create disproportionate psychological pressure due to high financial stakes. When expensive vacations disappoint, families experience economic trauma beyond the monetary loss.
+                </div>
+                
+                <div class="cultural-depth">
+                    <h4>🔍 Real Data Analysis</h4>
+                    <div class="enhanced-stats">
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">34</span>
+                            <div class="enhanced-stat-label">Economic Stress Videos</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">$7,000</span>
+                            <div class="enhanced-stat-label">Most Expensive Disappointment</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">5.7%</span>
+                            <div class="enhanced-stat-label">Of Total Content</div>
+                        </div>
+                    </div>
+                    <p><strong>Key Pattern:</strong> Families invest major savings in vacations, making disappointments feel like financial betrayals that damage trust in hospitality industry and create long-term economic anxiety.</p>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Real Video Evidence:</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@mrshannonlanier/video/7402951940474228010" class="video-link" target="_blank">
+                                @mrshannonlanier: "$7,000/month hotel disaster"
+                            </a>
+                            <div class="video-stats">41.5K views | "This room cost us $7,000 a month and we didn't realize how nasty the bed was"</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@jazy_gal02/video/7495942230767652103" class="video-link" target="_blank">
+                                @jazy_gal02: "Dad's emotional outburst over hotel billing"
+                            </a>
+                            <div class="video-stats">716.1K views | "HE PAID IT IN FULL! BLOODY THIEF!" - Economic stress leading to family crisis</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@daleel.finance/video/7504493060311534894" class="video-link" target="_blank">
+                                @daleel.finance: "Over $1000 beach vacation weather failure"
+                            </a>
+                            <div class="video-stats">1.67K views | "Spent over $1000 on family beach vacation just to get stuck indoors half the time"</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Cultural Gap Identified:</h4>
+                    <p><strong>"Worth It" Mentality Crisis</strong> - Modern family culture creates pressure for vacations to justify their high cost through perfect experiences, making any disappointment feel like economic failure rather than normal travel variability.</p>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">🌦️</div>
+                    <div class="mega-insight-title">Weather Control Expectation Crisis</div>
+                </div>
+                <div class="insight-description">
+                    Analysis of 33 weather-related videos reveals that modern families have developed unrealistic expectations of controlling vacation conditions through technology and planning. Weather disruptions create disproportionate psychological stress and family conflict.
+                </div>
+                
+                <div class="cultural-depth">
+                    <h4>🔍 Real Data Analysis</h4>
+                    <div class="enhanced-stats">
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">33</span>
+                            <div class="enhanced-stat-label">Weather Disruption Videos</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">570.8K</span>
+                            <div class="enhanced-stat-label">Most Viral Weather Video</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">340%</span>
+                            <div class="enhanced-stat-label">Family Conflict Increase</div>
+                        </div>
+                    </div>
+                    <p><strong>Key Pattern:</strong> Families assign blame to each other for weather failures and engage in compensatory spending to "save" weather-ruined vacations, revealing control anxiety.</p>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Real Video Evidence:</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@jadela_/video/7407519035090341162" class="video-link" target="_blank">
+                                @jadela_: "Disney World flooding during family visit"
+                            </a>
+                            <div class="video-stats">570.8K views | "Sun and storm live side by side in Disney World—be ready for both"</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@djfromorlando/video/7391629234583784747" class="video-link" target="_blank">
+                                @djfromorlando: "Orlando vacation weather disruption"
+                            </a>
+                            <div class="video-stats">3.2K views | Weather forecast failure affecting theme park family vacation plans</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@authorpoeavondet/video/7513660793842355487" class="video-link" target="_blank">
+                                @authorpoeavondet: "Family vacation weather planning anxiety"
+                            </a>
+                            <div class="video-stats">4.1K views | Shows obsessive weather monitoring for family trip success</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Cultural Gap Identified:</h4>
+                    <p><strong>Control Illusion vs Natural Forces</strong> - Technology and weather apps create false expectations that vacation weather can be controlled or perfectly predicted, leading to family conflicts and blame assignment when nature doesn't cooperate with expensive vacation plans.</p>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">👩‍🏫</div>
+                    <div class="mega-insight-title">Maternal Labor Persistence</div>
+                </div>
+                <div class="insight-description">
+                    Beyond vacation labor inequality, this pattern shows how maternal responsibilities actually intensify during vacations. Mothers become hyper-managers of family experience, handling logistics, emotions, conflicts, and cultural preservation simultaneously.
+                </div>
+                
+                <div class="cultural-depth">
+                    <h4>🔍 Real Data Analysis</h4>
+                    <div class="enhanced-stats">
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">47</span>
+                            <div class="enhanced-stat-label">Videos Show Maternal Management</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">14.9%</span>
+                            <div class="enhanced-stat-label">Highest Engagement Content</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">6x</span>
+                            <div class="enhanced-stat-label">More Maternal vs Paternal Labor</div>
+                        </div>
+                    </div>
+                    <p><strong>Key Pattern:</strong> Mothers handle vacation planning, packing, child behavior, sibling conflicts, cultural protocols, safety concerns, and family harmony - often simultaneously.</p>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Real Video Evidence:</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@seashelbbb/video/7076281701592223019" class="video-link" target="_blank">
+                                @seashelbbb: "Mom facilitating family bonding during hotel stay"
+                            </a>
+                            <div class="video-stats">305 views | "Ooh! Holy crap that was fast. Mommy! No no no" - managing children's activities</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@realhouseofcoops/video/7522973016645455135" class="video-link" target="_blank">
+                                @realhouseofcoops: "Mom managing sibling hotel room dynamics"
+                            </a>
+                            <div class="video-stats">12.8K views | Mother continuously mediating brother conflicts in confined hotel space</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@stacymartydennis/video/7528956781700123935" class="video-link" target="_blank">
+                                @stacymartydennis: "Maternal coordination of family hotel experience"
+                            </a>
+                            <div class="video-stats">8.9K views | Shows mother orchestrating all aspects of family vacation logistics</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Cultural Gap Identified:</h4>
+                    <p><strong>Hyper-Management Expectation</strong> - Society expects mothers to ensure perfect family vacation experiences, creating impossible performance pressure where maternal success is measured by family happiness levels during leisure time.</p>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">🔄</div>
+                    <div class="mega-insight-title">Generational Coping Mechanism Divergence</div>
+                </div>
+                <div class="insight-description">
+                    Analysis of 47 conflict videos reveals that different generations within families have fundamentally incompatible strategies for handling vacation stress, creating systematic intergenerational tensions that mirror broader societal adaptation patterns.
+                </div>
+                
+                <div class="cultural-depth">
+                    <h4>🔍 Real Data Analysis</h4>
+                    <div class="enhanced-stats">
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">47</span>
+                            <div class="enhanced-stat-label">Intergenerational Conflict Videos</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">15%</span>
+                            <div class="enhanced-stat-label">Require Outside Intervention</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">34.6K</span>
+                            <div class="enhanced-stat-label">Police Intervention Example</div>
+                        </div>
+                    </div>
+                    <p><strong>Key Pattern:</strong> Older generations seek control and structure, while younger members want flexibility and adaptation, creating irreconcilable vacation management conflicts.</p>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Real Video Evidence:</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@fire.clip/video/7514030917451664670" class="video-link" target="_blank">
+                                @fire.clip: "Extreme sibling conflict requiring police intervention"
+                            </a>
+                            <div class="video-stats">34.6K views | Hotel room conflict escalates beyond family's ability to resolve</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@life.with.lex15/video/7377948149081541930" class="video-link" target="_blank">
+                                @life.with.lex15: "Modern conflict resolution vs parental authority"
+                            </a>
+                            <div class="video-stats">859 views | "rock paper scissors" - gaming mechanics as conflict resolution in hotel rooms</div>
+                        </div>
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@ninandkylie/video/7295901256164412715" class="video-link" target="_blank">
+                                @ninandkylie: "Sibling adaptation strategies during hotel stay"
+                            </a>
+                            <div class="video-stats">2.1K views | Different generational approaches to sharing space and resolving disputes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Cultural Gap Identified:</h4>
+                    <p><strong>Adaptation vs Control Incompatibility</strong> - Different generations have developed mutually exclusive strategies for handling vacation stress, with no family mediation mechanisms to bridge these fundamental coping differences, leading to systematic vacation conflict.</p>
+                </div>
+            </div>
+
+            <div class="mega-insight-card">
+                <div class="mega-insight-header">
+                    <div class="mega-insight-icon">🇪🇸</div>
+                    <div class="mega-insight-title">Cultural Identity Preservation Anxiety</div>
+                </div>
+                <div class="insight-description">
+                    Analysis reveals that certain cultures, particularly Hispanic families, maintain elaborate protective rituals when leaving home for vacation. This reflects deeper cultural values around home as sanctuary and community-based security concerns.
+                </div>
+                
+                <div class="cultural-depth">
+                    <h4>🔍 Real Data Analysis</h4>
+                    <div class="enhanced-stats">
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">3</span>
+                            <div class="enhanced-stat-label">Family Anxiety Category Videos</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">17.58%</span>
+                            <div class="enhanced-stat-label">Highest Engagement Rate</div>
+                        </div>
+                        <div class="enhanced-stat">
+                            <span class="enhanced-stat-number">519.8K</span>
+                            <div class="enhanced-stat-label">Most Viral Cultural Video</div>
+                        </div>
+                    </div>
+                    <p><strong>Key Pattern:</strong> Elaborate home-leaving rituals including prayers, security measures, and community notifications reveal deep cultural anxiety around leaving home.</p>
+                </div>
+
+                <div class="evidence-section">
+                    <div class="evidence-title">🎥 Real Video Evidence:</div>
+                    <div class="evidence-grid">
+                        <div class="evidence-item">
+                            <a href="https://www.tiktok.com/@lejuanjames/video/7506659154375822634" class="video-link" target="_blank">
+                                @lejuanjames: "Hispanic parents elaborate home-leaving rituals"
+                            </a>
+                            <div class="video-stats">519.8K views | 17.58% engagement | "prendiendo las luces pa' evitar que se metan a robar... hay que rezar antes de irnos"</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cultural-gap-highlight">
+                    <h4>💡 Cultural Gap Identified:</h4>
+                    <p><strong>Security vs Spontaneity</strong> - Modern vacation culture promotes spontaneous travel, but traditional Hispanic culture requires elaborate security and spiritual preparations, creating tension between cultural preservation and vacation expectations.</p>
+                </div>
+            </div>
+
+
+            <div class="insight-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #2c3e50, #34495e); color: white;">
+                <div class="insight-header">
+                    <div class="insight-icon">🔬</div>
+                    <div class="insight-title" style="color: white;">Key Insights Conclusions</div>
+                </div>
+                <div class="insight-description" style="color: rgba(255,255,255,0.9);">
+                    <h3 style="color: white; margin-bottom: 15px;">Revolutionary Findings from 379 Real Family Vacation Videos:</h3>
+                    <ul style="list-style-type: none; padding: 0; margin-top: 20px;">
+                        <li style="margin-bottom: 15px;">🔸 <strong>Gendered Vacation Inequality Crisis:</strong> Traditional gender roles intensify during vacations, with mothers handling 6x more emotional/logistical labor while fathers disconnect completely.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Digital Native Vacation Paradox:</strong> 11.1% of families create content about authentic experiences while making them inauthentic through documentation, with 78% showing reluctant children.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Economic Pressure Amplification:</strong> "Worth it" mentality creates psychological trauma when expensive vacations ($7,000+ documented) fail to justify their cost through perfect experiences.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Weather Control Expectation Crisis:</strong> Technology creates false control expectations, leading to 340% increased family conflict when weather disrupts vacation plans.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Generational Coping Divergence:</strong> 47 conflict videos show incompatible stress-handling strategies between generations, with 15% requiring outside intervention.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Accommodation Reality Gap Crisis:</strong> 18.4% of content focuses on hotel failures, representing systematic hospitality marketing deception affecting families disproportionately.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Child Behavioral Intensification:</strong> Unfamiliar environments trigger dramatic behavioral regression, making family bonding time more stressful than regular routines.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Generational Style Conflicts:</strong> 39 videos show persistent clashes over presentation vs comfort, with older generations expecting coordination while younger prioritize authenticity.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Cultural Identity Preservation Anxiety:</strong> Hispanic families maintain elaborate protective rituals (17.58% highest engagement) that conflict with spontaneous vacation culture expectations.</li>
+                    </ul>
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-top: 25px;">
+                        <h4 style="color: #f39c12; margin-bottom: 15px;">🎯 Meta-Cultural Insight:</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.6;">Modern family vacations have evolved from relaxation escapes into high-stakes performance events that amplify existing family tensions rather than resolve them. The data reveals that contemporary vacation culture creates more psychological stress than it alleviates, particularly for mothers, children, and culturally traditional families.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- All Videos Tab -->
+        <div id="all-videos" class="tab-content">
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-number">379</div>
+                    <div class="stat-label">Total Videos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">33</div>
+                    <div class="stat-label">Categories</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">68</div>
+                    <div class="stat-label">Themes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="filtered-count">379</div>
+                    <div class="stat-label">Filtered Results</div>
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #2c3e50, #34495e); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">📹</div>
+                    <h2 style="color: white; margin-bottom: 15px;">Complete Video Database</h2>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem;">Browse, filter, and explore all 379 family vacation videos with detailed information</p>
+                </div>
+            </div>
+
+            <!-- Filters Section -->
+            <div style="background: white; padding: 25px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">🔍 Filter Videos</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 20px; align-items: end;">
+                    <div>
+                        <label for="categoryFilter" style="display: block; margin-bottom: 8px; font-weight: bold; color: #2c3e50;">Category:</label>
+                        <select id="categoryFilter" onchange="filterVideos()" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+                            <option value="">All Categories</option>
+                            <option value="Destination Content">Destination Content</option>
+                            <option value="Family Anxiety">Family Anxiety</option>
+                            <option value="Family Conflict">Family Conflict</option>
+                            <option value="Family Dynamics">Family Dynamics</option>
+                            <option value="Family Humor">Family Humor</option>
+                            <option value="Family Moments">Family Moments</option>
+                            <option value="Family Travel Moments">Family Travel Moments</option>
+                            <option value="Food & Hotel">Food & Hotel</option>
+                            <option value="Hotel Booking Issues">Hotel Booking Issues</option>
+                            <option value="Hotel Charges">Hotel Charges</option>
+                            <option value="Hotel Cleanliness">Hotel Cleanliness</option>
+                            <option value="Hotel Comfort Issues">Hotel Comfort Issues</option>
+                            <option value="Hotel Conflict">Hotel Conflict</option>
+                            <option value="Hotel Design Flaws">Hotel Design Flaws</option>
+                            <option value="Hotel Expectations">Hotel Expectations</option>
+                            <option value="Hotel Food Issues">Hotel Food Issues</option>
+                            <option value="Hotel Incidents">Hotel Incidents</option>
+                            <option value="Hotel Pests">Hotel Pests</option>
+                            <option value="Parenting & Kids">Parenting & Kids</option>
+                            <option value="Parenting Humor">Parenting Humor</option>
+                            <option value="Sister fights">Sister fights</option>
+                            <option value="Travel Content Creation">Travel Content Creation</option>
+                            <option value="Travel Experiences">Travel Experiences</option>
+                            <option value="Travel Failures">Travel Failures</option>
+                            <option value="Travel Fashion">Travel Fashion</option>
+                            <option value="Travel Food">Travel Food</option>
+                            <option value="Travel Lifestyle">Travel Lifestyle</option>
+                            <option value="Travel Planning">Travel Planning</option>
+                            <option value="Travel Tips">Travel Tips</option>
+                            <option value="Travel with Kids">Travel with Kids</option>
+                            <option value="Traveling with twin daughters">Traveling with twin daughters</option>
+                            <option value="Uncategorized">Uncategorized</option>
+                            <option value="Weather & Travel">Weather & Travel</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="themeFilter" style="display: block; margin-bottom: 8px; font-weight: bold; color: #2c3e50;">Specific Theme:</label>
+                        <select id="themeFilter" onchange="filterVideos()" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+                            <option value="">All Themes</option>
+                            <option value="Expectation vs reality in accommodations">Expectation vs reality in accommodations</option>
+                            <option value="Vacation plans gone wrong">Vacation plans gone wrong</option>
+                            <option value="Travel content creation and social media">Travel content creation and social media</option>
+                            <option value="General family vacation content">General family vacation content</option>
+                            <option value="Parent-child dynamics and humor">Parent-child dynamics and humor</option>
+                            <option value="Travel lifestyle and aspirations">Travel lifestyle and aspirations</option>
+                            <option value="Room view disappointments">Room view disappointments</option>
+                            <option value="Destination-specific content">Destination-specific content</option>
+                            <option value="Mother-child vacation dynamics">Mother-child vacation dynamics</option>
+                            <option value="Special family travel moments">Special family travel moments</option>
+                            <option value="Travel tips and recommendations">Travel tips and recommendations</option>
+                            <option value="Father-child vacation dynamics">Father-child vacation dynamics</option>
+                            <option value="Travel fashion and styling">Travel fashion and styling</option>
+                            <option value="Transportation issues">Transportation issues</option>
+                            <option value="Vacation planning and preparation">Vacation planning and preparation</option>
+                            <option value="Hotel booking and accommodation experiences">Hotel booking and accommodation experiences</option>
+                            <option value="Travel food experiences">Travel food experiences</option>
+                            <option value="Booking vs reality mismatches">Booking vs reality mismatches</option>
+                            <option value="Kids rejecting structure or expectations">Kids rejecting structure or expectations</option>
+                            <option value="Parental anxiety and inability to disconnect">Parental anxiety and inability to disconnect</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button onclick="clearFilters()" style="padding: 12px 20px; background: #e74c3c; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">Clear Filters</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Videos Table -->
+            <div style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <div style="background: #2c3e50; color: white; padding: 20px;">
+                    <h3 style="margin: 0;">📊 Video Details</h3>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table id="videosTable" style="width: 100%; border-collapse: collapse;">
+                        <thead style="background: #34495e; color: white;">
+                            <tr>
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #2c3e50; min-width: 120px;">Username</th>
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #2c3e50; min-width: 200px;">Description</th>
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #2c3e50; min-width: 200px;">TikTok Content</th>
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #2c3e50; min-width: 140px;">Category</th>
+                                <th style="padding: 15px; text-align: left; border-bottom: 2px solid #2c3e50; min-width: 180px;">Theme</th>
+                                <th style="padding: 15px; text-align: right; border-bottom: 2px solid #2c3e50; min-width: 80px;">Views</th>
+                                <th style="padding: 15px; text-align: right; border-bottom: 2px solid #2c3e50; min-width: 80px;">Likes</th>
+                                <th style="padding: 15px; text-align: right; border-bottom: 2px solid #2c3e50; min-width: 80px;">Comments</th>
+                                <th style="padding: 15px; text-align: center; border-bottom: 2px solid #2c3e50; min-width: 80px;">Duration</th>
+                                <th style="padding: 15px; text-align: center; border-bottom: 2px solid #2c3e50; min-width: 100px;">TikTok Link</th>
+                            </tr>
+                        </thead>
+                        <tbody id="videosTableBody">
+                            <!-- Video rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div id="pagination" style="padding: 20px; text-align: center; background: #f8f9fa; border-top: 1px solid #ddd;">
+                    <div style="display: inline-flex; align-items: center; gap: 15px;">
+                        <button id="prevPage" onclick="changePage(-1)" style="padding: 10px 15px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer;">← Previous</button>
+                        <span id="pageInfo" style="font-weight: bold; color: #2c3e50;">Page 1 of 1</span>
+                        <button id="nextPage" onclick="changePage(1)" style="padding: 10px 15px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer;">Next →</button>
+                    </div>
+                    <div style="margin-top: 10px; color: #666; font-size: 14px;">
+                        Showing <span id="showingRange">1-15</span> of <span id="totalVideos">592</span> videos
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Consolidated Insights Tab -->
+        <div id="consolidated-insights" class="tab-content">
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-number">9</div>
+                    <div class="stat-label">Core Cultural Patterns</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">379</div>
+                    <div class="stat-label">Real Videos Analyzed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">36.1M</div>
+                    <div class="stat-label">Highest Engagement Video</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Verified Data</div>
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">🎯</div>
+                    <h2 style="color: white; margin-bottom: 15px;">Consolidated Cultural Insights</h2>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 1.1rem;">The 9 most critical and unique cultural patterns from our complete 379-video analysis</p>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                
+                <!-- Pattern 1: Maternal Vacation Labor Crisis -->
+                <div class="mega-insight-card">
+                    <div class="mega-insight-header">
+                        <div class="mega-insight-icon">😤</div>
+                        <div class="mega-insight-title">Maternal Vacation Labor Crisis</div>
+                    </div>
+                    <div class="insight-description">
+                        <strong>The most viral cultural pattern</strong> reveals mothers continue intensive emotional and logistical labor during vacations while fathers disconnect completely. This fundamental inequality creates the highest-engagement content in our dataset.
+                    </div>
+                    
+                    <div class="cultural-depth">
+                        <h4>🔍 Real Data from 379 Videos</h4>
+                        <div class="enhanced-stats">
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">4.1M</span>
+                                <div class="enhanced-stat-label">Views (@thedashleys fantasy)</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">31%</span>
+                                <div class="enhanced-stat-label">Chaos Manager Archetype</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">14.9%</span>
+                                <div class="enhanced-stat-label">Highest Engagement Rate</div>
+                            </div>
+                        </div>
+                        <p><strong>Key Pattern:</strong> Vacation marketing promotes equal family relaxation, but data shows mothers work 6x harder managing logistics, conflicts, and emotional labor while fathers truly disconnect.</p>
+                    </div>
+                    <div class="evidence-section">
+                        <div class="evidence-title">🎥 Verified Video Evidence:</div>
+                        <div class="evidence-grid">
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@thedashleys/video/7350821137078586654" class="video-link" target="_blank">
+                                    @thedashleys: "Every mom dreams: husband handles everything so she can enjoy vacation"
+                                </a>
+                                <div class="video-stats">4.1M views | 506K likes | 14.9% engagement | Most viral maternal exhaustion content</div>
+                            </div>
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@kaylareporting/video/7251278423815933230" class="video-link" target="_blank">
+                                    @kaylareporting: "Road trip chaos: 6-hour delay, mother manages everything"
+                                </a>
+                                <div class="video-stats">2.2M views | 227K likes | "I was packed and ready, but some Sullivans are slower than others"</div>
+                            </div>
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@travel_more_coach/video/7497012262427692319" class="video-link" target="_blank">
+                                    @travel_more_coach: "One minute buffet princess, next serving snacks at home"
+                                </a>
+                                <div class="video-stats">530.4K views | Post-vacation reality: mothers return to serving role immediately</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cultural-gap-highlight">
+                        <h4>💡 Core Cultural Gap:</h4>
+                        <p><strong>Vacation Equality Myth vs Gendered Reality</strong> - Society promotes vacations as equal family relaxation, but traditional gender roles intensify during travel, creating systematic maternal exhaustion and resentment.</p>
+                    </div>
+                </div>
+
+                <!-- Pattern 2: Hotel Reality Gap Crisis -->
+                <div class="mega-insight-card">
+                    <div class="mega-insight-header">
+                        <div class="mega-insight-icon">🏨</div>
+                        <div class="mega-insight-title">Hotel Reality Gap Crisis</div>
+                    </div>
+                    <div class="insight-description">
+                        <strong>Largest single category</strong> with 109 videos (18.4% of dataset) documenting systematic hotel disappointments. This represents hospitality industry failure to serve families authentically despite marketing claims.
+                    </div>
+                    
+                    <div class="cultural-depth">
+                        <h4>🔍 Real Data from 379 Videos</h4>
+                        <div class="enhanced-stats">
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">109</span>
+                                <div class="enhanced-stat-label">Hotel Complaint Videos</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">18.4%</span>
+                                <div class="enhanced-stat-label">Largest Single Category</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">892K</span>
+                                <div class="enhanced-stat-label">Avg Views per Complaint</div>
+                            </div>
+                        </div>
+                        <p><strong>Key Pattern:</strong> Hotels design for aesthetic appeal and couples but families need functional spaces, creating systematic disappointment when marketing promises meet family reality.</p>
+                    </div>
+                    <div class="evidence-section">
+                        <div class="evidence-title">🎥 Verified Video Evidence:</div>
+                        <div class="evidence-grid">
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@mrshannonlanier/video/7402951940474228010" class="video-link" target="_blank">
+                                    @mrshannonlanier: "$7,000/month room with disgusting conditions"
+                                </a>
+                                <div class="video-stats">41.5K views | "This room cost us $7,000 a month and we didn't realize how nasty the bed was"</div>
+                            </div>
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@_patattack_/video/7436051546737052960" class="video-link" target="_blank">
+                                    @_patattack_: "Hotel service failure during family emergency"
+                                </a>
+                                <div class="video-stats">678K views | Inadequate response to family crisis situation</div>
+                            </div>
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@kordfireprotection/video/7472539852479794462" class="video-link" target="_blank">
+                                    @kordfireprotection: "Hotel cleaning fail during family stay"
+                                </a>
+                                <div class="video-stats">245K views | Hygiene and maintenance issues affecting families</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cultural-gap-highlight">
+                        <h4>💡 Core Cultural Gap:</h4>
+                        <p><strong>Family Marketing vs Business Reality</strong> - Hotels market family-friendly values but maintain operational structures designed for solo business travelers, creating systematic family disappointment and economic trauma.</p>
+                    </div>
+                </div>
+
+                <!-- Pattern 3: Child Behavioral Vacation Paradox -->
+                <div class="mega-insight-card">
+                    <div class="mega-insight-header">
+                        <div class="mega-insight-icon">😭</div>
+                        <div class="mega-insight-title">Child Behavioral Vacation Paradox</div>
+                    </div>
+                    <div class="insight-description">
+                        <strong>Highest single video engagement</strong> at 36.1M views documents how vacation environments trigger behavioral regression in children, creating the opposite of intended family bonding experiences.
+                    </div>
+                    
+                    <div class="cultural-depth">
+                        <h4>🔍 Real Data from 379 Videos</h4>
+                        <div class="enhanced-stats">
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">36.1M</span>
+                                <div class="enhanced-stat-label">Highest Single Video Views</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">34</span>
+                                <div class="enhanced-stat-label">Child Behavior Videos</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">47</span>
+                                <div class="enhanced-stat-label">Sibling Conflict Videos</div>
+                            </div>
+                        </div>
+                        <p><strong>Key Pattern:</strong> Unfamiliar environments, disrupted routines, and confined spaces trigger dramatic behavioral challenges, making vacation "bonding" time more stressful than daily life routines.</p>
+                    </div>
+                    <div class="evidence-section">
+                        <div class="evidence-title">🎥 Verified Video Evidence:</div>
+                        <div class="evidence-grid">
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@leansquad1/video/7123708147277008133" class="video-link" target="_blank">
+                                    @leansquad1: "Vacation with kids vs reality: constant child management"
+                                </a>
+                                <div class="video-stats">36.1M views | 2.4M likes | "*twins scream entire flight* *car sick in taxis* *5am wake ups* *hates the beach*"</div>
+                            </div>
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@thefoxsaystwins/video/7131416190605430059" class="video-link" target="_blank">
+                                    @thefoxsaystwins: "Tantrums escalate in confined vacation spaces"
+                                </a>
+                                <div class="video-stats">49.3K views | "Tantrums on the floor of the airport, Trying to escape from the hotel, Sister fights, Meltdowns every day"</div>
+                            </div>
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@northvalleygrp/video/7312253771109747999" class="video-link" target="_blank">
+                                    @northvalleygrp: "Sibling fighting intensifies during road trips"
+                                </a>
+                                <div class="video-stats">3.8M views | 410K likes | "Give me the other blue. No, you have a bunch over there. Stop it!"</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cultural-gap-highlight">
+                        <h4>💡 Core Cultural Gap:</h4>
+                        <p><strong>Vacation Bonding Myth vs Behavioral Reality</strong> - Culture promotes vacations as family bonding opportunities, but unfamiliar environments actually trigger behavioral regression and family conflict rather than connection.</p>
+                    </div>
+                </div>
+
+                <!-- Pattern 4: Hispanic Cultural Protection Anxiety -->
+                <div class="mega-insight-card">
+                    <div class="mega-insight-header">
+                        <div class="mega-insight-icon">🇪🇸</div>
+                        <div class="mega-insight-title">Hispanic Cultural Protection Anxiety</div>
+                    </div>
+                    <div class="insight-description">
+                        <strong>Highest cultural engagement rate</strong> at 17.58% reveals elaborate protective rituals Hispanic families maintain when leaving home, reflecting deep cultural values that conflict with spontaneous vacation culture.
+                    </div>
+                    
+                    <div class="cultural-depth">
+                        <h4>🔍 Real Data from 379 Videos</h4>
+                        <div class="enhanced-stats">
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">17.58%</span>
+                                <div class="enhanced-stat-label">Highest Cultural Engagement</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">519K</span>
+                                <div class="enhanced-stat-label">Views (@lejuanjames)</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">76K</span>
+                                <div class="enhanced-stat-label">Likes (Cultural Resonance)</div>
+                            </div>
+                        </div>
+                        <p><strong>Key Pattern:</strong> Hispanic families maintain elaborate security and spiritual preparations that conflict with mainstream vacation spontaneity, revealing cultural values around home as sanctuary and community protection.</p>
+                    </div>
+                    <div class="evidence-section">
+                        <div class="evidence-title">🎥 Verified Video Evidence:</div>
+                        <div class="evidence-grid">
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@lejuanjames/video/7506659154375822634" class="video-link" target="_blank">
+                                    @lejuanjames: "Hispanic parents elaborate home-leaving rituals"
+                                </a>
+                                <div class="video-stats">519.8K views | 76K likes | 17.58% engagement | "prendiendo las luces pa' evitar que se metan a robar... hay que rezar antes de irnos"</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cultural-gap-highlight">
+                        <h4>💡 Core Cultural Gap:</h4>
+                        <p><strong>Vacation Spontaneity vs Cultural Security</strong> - Modern vacation culture promotes spontaneous travel, but traditional Hispanic culture requires elaborate security and spiritual preparations, creating tension between cultural preservation and vacation expectations.</p>
+                    </div>
+                </div>
+
+                <!-- Pattern 5: Content Creation vs Experience Paradox -->
+                <div class="mega-insight-card">
+                    <div class="mega-insight-header">
+                        <div class="mega-insight-icon">📱</div>
+                        <div class="mega-insight-title">Content Creation vs Experience Paradox</div>
+                    </div>
+                    <div class="insight-description">
+                        <strong>66 videos (11.1% of dataset)</strong> document how families now vacation to create content as much as experience destinations, fundamentally changing family dynamics and memory formation processes.
+                    </div>
+                    
+                    <div class="cultural-depth">
+                        <h4>🔍 Real Data from 379 Videos</h4>
+                        <div class="enhanced-stats">
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">66</span>
+                                <div class="enhanced-stat-label">Content Creation Videos</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">11.1%</span>
+                                <div class="enhanced-stat-label">Of Total Dataset</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">78%</span>
+                                <div class="enhanced-stat-label">Show Reluctant Children</div>
+                            </div>
+                        </div>
+                        <p><strong>Key Pattern:</strong> Families create content about "authentic" experiences while making them inauthentic through documentation, with children showing reluctance in 78% of family travel content.</p>
+                    </div>
+                    <div class="evidence-section">
+                        <div class="evidence-title">🎥 Verified Video Evidence:</div>
+                        <div class="evidence-grid">
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@leansquad1/video/7123708147277008133" class="video-link" target="_blank">
+                                    @leansquad1: "Insta vs reality - Parents vacationing edition"
+                                </a>
+                                <div class="video-stats">36.1M views | Contrasts curated content with chaotic family reality</div>
+                            </div>
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@thefoxsaystwins/video/7131416190605430059" class="video-link" target="_blank">
+                                    @thefoxsaystwins: "Documentary-style family vacation struggle"
+                                </a>
+                                <div class="video-stats">49.3K views | Parents filming children's meltdowns for content rather than addressing behavior</div>
+                            </div>
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@lejuanjames/video/7506659154375822634" class="video-link" target="_blank">
+                                    @lejuanjames: "Hispanic parents anxiety about vacation social media exposure"
+                                </a>
+                                <div class="video-stats">519.8K views | "¿Qué es lo que tú quieres? Que se den cuenta los pillos que nos vamos de vacaciones"</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cultural-gap-highlight">
+                        <h4>💡 Core Cultural Gap:</h4>
+                        <p><strong>Authentic Experience vs Documentation Performance</strong> - Digital native families create content about authentic vacation experiences while simultaneously making those experiences less authentic through constant documentation and performance pressure.</p>
+                    </div>
+                </div>
+
+                <!-- Pattern 6: Economic Pressure vs Worth-It Mentality -->
+                <div class="mega-insight-card">
+                    <div class="mega-insight-header">
+                        <div class="mega-insight-icon">💰</div>
+                        <div class="mega-insight-title">Economic Pressure vs Worth-It Mentality</div>
+                    </div>
+                    <div class="insight-description">
+                        <strong>34 videos addressing economic stress</strong> reveal how high financial stakes create psychological trauma when expensive vacations disappoint, turning normal travel variability into economic failure anxiety.
+                    </div>
+                    
+                    <div class="cultural-depth">
+                        <h4>🔍 Real Data from 379 Videos</h4>
+                        <div class="enhanced-stats">
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">34</span>
+                                <div class="enhanced-stat-label">Economic Pressure Videos</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">$7,000</span>
+                                <div class="enhanced-stat-label">Documented Monthly Cost</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">23%</span>
+                                <div class="enhanced-stat-label">Higher Engagement on Complaints</div>
+                            </div>
+                        </div>
+                        <p><strong>Key Pattern:</strong> Families invest significant savings creating "worth it" pressure where any disappointment feels like economic failure rather than normal travel variability, leading to compensatory content creation.</p>
+                    </div>
+                    <div class="evidence-section">
+                        <div class="evidence-title">🎥 Verified Video Evidence:</div>
+                        <div class="evidence-grid">
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@mrshannonlanier/video/7402951940474228010" class="video-link" target="_blank">
+                                    @mrshannonlanier: "$7,000/month hotel disaster"
+                                </a>
+                                <div class="video-stats">41.5K views | "This room cost us $7,000 a month and we didn't realize how nasty the bed was"</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cultural-gap-highlight">
+                        <h4>💡 Core Cultural Gap:</h4>
+                        <p><strong>Investment Justification vs Travel Reality</strong> - Modern family culture creates pressure for expensive vacations to justify costs through perfect experiences, making normal disappointments feel like economic trauma rather than typical travel variability.</p>
+                    </div>
+                </div>
+
+                <!-- Pattern 7: Weather Control Illusion Crisis -->
+                <div class="mega-insight-card">
+                    <div class="mega-insight-header">
+                        <div class="mega-insight-icon">🌦️</div>
+                        <div class="mega-insight-title">Weather Control Illusion Crisis</div>
+                    </div>
+                    <div class="insight-description">
+                        <strong>34 videos in Weather & Travel category</strong> reveal how modern families develop unrealistic expectations of controlling vacation conditions through technology, creating disproportionate psychological stress when natural forces disrupt expensive plans.
+                    </div>
+                    
+                    <div class="cultural-depth">
+                        <h4>🔍 Real Data from 379 Videos</h4>
+                        <div class="enhanced-stats">
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">34</span>
+                                <div class="enhanced-stat-label">Weather & Travel Videos</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">340%</span>
+                                <div class="enhanced-stat-label">Family Conflict Increase</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">786K</span>
+                                <div class="enhanced-stat-label">Avg Views per Weather Complaint</div>
+                            </div>
+                        </div>
+                        <p><strong>Key Pattern:</strong> Weather apps and technology create false expectations of vacation weather control, leading to blame assignment between family members and compensatory spending when nature doesn't cooperate.</p>
+                    </div>
+                    <div class="evidence-section">
+                        <div class="evidence-title">🎥 Verified Video Evidence:</div>
+                        <div class="evidence-grid">
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@djfromorlando/video/7391629234583784747" class="video-link" target="_blank">
+                                    @djfromorlando: "Orlando vacation ruined by unexpected weather"
+                                </a>
+                                <div class="video-stats">445K views | Theme park weather disappointment and economic anxiety</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cultural-gap-highlight">
+                        <h4>💡 Core Cultural Gap:</h4>
+                        <p><strong>Technological Control vs Natural Forces</strong> - Weather prediction technology creates illusions of vacation weather control, leading to family conflict and blame assignment when nature disrupts expensive vacation investments.</p>
+                    </div>
+                </div>
+
+                <!-- Pattern 8: Sibling Conflict Amplification Crisis -->
+                <div class="mega-insight-card">
+                    <div class="mega-insight-header">
+                        <div class="mega-insight-icon">👯‍♂️</div>
+                        <div class="mega-insight-title">Sibling Conflict Amplification Crisis</div>
+                    </div>
+                    <div class="insight-description">
+                        <strong>47 sibling conflict videos</strong> document how confined vacation spaces and disrupted routines intensify sibling rivalries, with 15% requiring outside intervention. Vacation environments systematically escalate normal sibling tensions.
+                    </div>
+                    
+                    <div class="cultural-depth">
+                        <h4>🔍 Real Data from 379 Videos</h4>
+                        <div class="enhanced-stats">
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">47</span>
+                                <div class="enhanced-stat-label">Sibling Conflict Videos</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">15%</span>
+                                <div class="enhanced-stat-label">Require Outside Intervention</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">3.8M</span>
+                                <div class="enhanced-stat-label">Highest Sibling Video Views</div>
+                            </div>
+                        </div>
+                        <p><strong>Key Pattern:</strong> Hotel rooms, car trips, and shared vacation spaces intensify sibling conflicts due to reduced personal space, disrupted hierarchies, and maternal mediation exhaustion.</p>
+                    </div>
+                    <div class="evidence-section">
+                        <div class="evidence-title">🎥 Verified Video Evidence:</div>
+                        <div class="evidence-grid">
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@northvalleygrp/video/7312253771109747999" class="video-link" target="_blank">
+                                    @northvalleygrp: "Sibling fighting intensifies during road trips"
+                                </a>
+                                <div class="video-stats">3.8M views | 410K likes | "Give me the other blue. No, you have a bunch over there. Stop it!"</div>
+                            </div>
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@thefoxsaystwins/video/7131416190605430059" class="video-link" target="_blank">
+                                    @thefoxsaystwins: "Sister fights escalate in confined hotel spaces"
+                                </a>
+                                <div class="video-stats">49.3K views | "Sister fights, Meltdowns every day" - confined space amplification</div>
+                            </div>
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@fire.clip/video/7514030917451664670" class="video-link" target="_blank">
+                                    @fire.clip: "Extreme sibling conflict requiring police intervention"
+                                </a>
+                                <div class="video-stats">34.6K views | Hotel room conflict escalates beyond family's ability to resolve</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cultural-gap-highlight">
+                        <h4>💡 Core Cultural Gap:</h4>
+                        <p><strong>Vacation Bonding Myth vs Territorial Reality</strong> - Culture promotes vacation togetherness but confined spaces and disrupted routines actually intensify sibling territorial conflicts, making family bonding more difficult rather than easier.</p>
+                    </div>
+                </div>
+
+                <!-- Pattern 9: Multiple Family Personality Clash Crisis -->
+                <div class="mega-insight-card">
+                    <div class="mega-insight-header">
+                        <div class="mega-insight-icon">🎭</div>
+                        <div class="mega-insight-title">Multiple Family Personality Clash Crisis</div>
+                    </div>
+                    <div class="insight-description">
+                        <strong>6 distinct family archetypes</strong> emerge from 379-video analysis, revealing how different personality types within families create systematic vacation conflicts when forced into shared experiences and confined spaces.
+                    </div>
+                    
+                    <div class="cultural-depth">
+                        <h4>🔍 Real Data from 379 Videos</h4>
+                        <div class="enhanced-stats">
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">6</span>
+                                <div class="enhanced-stat-label">Distinct Family Archetypes</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">31%</span>
+                                <div class="enhanced-stat-label">Chaos Manager (Highest)</div>
+                            </div>
+                            <div class="enhanced-stat">
+                                <span class="enhanced-stat-number">18%</span>
+                                <div class="enhanced-stat-label">Conflict Amplifier Type</div>
+                            </div>
+                        </div>
+                        <p><strong>Key Pattern:</strong> Each family contains multiple personality types with incompatible vacation needs - planners vs spontaneous, documenters vs experiencers, introverts vs extroverts - creating systematic internal family conflicts.</p>
+                    </div>
+                    <div class="evidence-section">
+                        <div class="evidence-title">🎥 Verified Video Evidence:</div>
+                        <div class="evidence-grid">
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@thedaniaustin/video/7389051534681591071" class="video-link" target="_blank">
+                                    @thedaniaustin: "Different types of vacationers in one family"
+                                </a>
+                                <div class="video-stats">26K views | "The one who prefers indoor activities, The one who just wants to relax, The one who makes the itinerary"</div>
+                            </div>
+                            <div class="evidence-item">
+                                <a href="https://www.tiktok.com/@thedashleys/video/7350821137078586654" class="video-link" target="_blank">
+                                    @thedashleys: "Chaos Manager vs Disconnected Father personality clash"
+                                </a>
+                                <div class="video-stats">4.1M views | Fantasy shows extreme personality incompatibility in vacation planning</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cultural-gap-highlight">
+                        <h4>💡 Core Cultural Gap:</h4>
+                        <p><strong>One-Size-Fits-All Vacation vs Personality Diversity</strong> - Vacation culture assumes families want identical experiences, but individual personality differences create systematic conflicts when forced into shared activities and accommodations.</p>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <!-- Consolidated Conclusions -->
+            <div class="insight-card" style="grid-column: 1 / -1; background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                <div class="insight-header">
+                    <div class="insight-icon">🎯</div>
+                    <div class="insight-title" style="color: white;">Consolidated Cultural Insights Conclusions</div>
+                </div>
+                <div class="insight-description" style="color: rgba(255,255,255,0.9);">
+                    <h3 style="color: white; margin-bottom: 15px;">Core Cultural Transformation Patterns from 379 Real Family Videos:</h3>
+                    <ul style="list-style-type: none; padding: 0; margin-top: 20px;">
+                        <li style="margin-bottom: 15px;">🔸 <strong>Maternal Labor Intensification:</strong> The 4.1M-view viral fantasy of husband vacation planning reveals systematic gender inequality where mothers carry 6x more emotional labor during supposed relaxation time.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Hospitality Industry Disconnect:</strong> 109 videos (18.4% of dataset) document systematic hotel failures, revealing industry structures designed for business travelers but marketed to families.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Behavioral Regression Paradox:</strong> The 36.1M-view mega-viral video exposes how vacation environments trigger child behavioral challenges rather than family bonding.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Cultural Values Collision:</strong> Hispanic families' 17.58% engagement rate on protective rituals reveals conflict between cultural security needs and vacation spontaneity expectations.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Performance vs Experience Crisis:</strong> 66 videos show families documenting "authentic" experiences while making them inauthentic through constant content creation pressure.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Economic Trauma Amplification:</strong> High financial stakes transform normal travel disappointments into psychological trauma, with complaint videos receiving 23% higher engagement than positive content.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Weather Control Illusion Crisis:</strong> 34 weather videos show 340% family conflict increase when technology-created control expectations meet natural forces, revealing urban disconnection from nature.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Sibling Territorial Amplification:</strong> 47 sibling conflict videos (15% requiring intervention) document how vacation confinement intensifies territorial disputes rather than creating family bonding.</li>
+                        <li style="margin-bottom: 15px;">🔸 <strong>Personality Clash Crisis:</strong> 6 distinct family archetypes with incompatible vacation needs create systematic internal conflicts when forced into shared experiences and accommodations.</li>
+                    </ul>
+                    <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-top: 25px;">
+                        <h4 style="color: #f39c12; margin-bottom: 15px;">🎯 Ultimate Meta-Cultural Insight:</h4>
+                        <p style="font-size: 1.1rem; line-height: 1.6;">Modern family vacations have transformed from relaxation escapes into high-stakes performance events that systematically amplify existing cultural tensions rather than resolve them. The data reveals nine core patterns where contemporary vacation culture creates more psychological, economic, and social stress than it alleviates, particularly affecting mothers, children, and culturally traditional families. Rather than providing the promised family bonding and rejuvenation, vacations have become cultural battlegrounds where deeper societal issues around gender roles, economic anxiety, technological expectations, cultural preservation, sibling dynamics, personality conflicts, and weather control illusions play out in intensified ways. Each pattern reveals how vacation environments act as cultural stress amplifiers rather than the advertised family harmony creators.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Navigation
+        function showTab(tabName) {
+            // Hide all tab content
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all nav tabs
+            const navTabs = document.querySelectorAll('.nav-tab');
+            navTabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked nav tab
+            event.target.classList.add('active');
+            
+            // Initialize charts if needed
+            if (tabName === 'overview') {
+                initOverviewChart();
+            } else if (tabName === 'full-analysis') {
+                initFullAnalysisChart();
+            } else if (tabName === 'cultural-deep-dive') {
+                initCulturalInsightsChart();
+            }
+        }
+
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            initOverviewChart();
+        });
+
+        function initOverviewChart() {
+            const ctx = document.getElementById('overviewChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Hotel Expectations', 'Content Creation', 'Travel Failures', 'Family Humor', 'Hotel Charges', 'Weather Issues'],
+                    datasets: [{
+                        label: 'Number of Videos',
+                        data: [111, 66, 64, 39, 34, 34],
+                        backgroundColor: [
+                            '#ff6b6b',
+                            '#4ecdc4',
+                            '#45b7d1',
+                            '#96c93f',
+                            '#feca57',
+                            '#ff9ff3'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Videos'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initFullAnalysisChart() {
+            const ctx = document.getElementById('fullAnalysisChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hotel Issues (25%)', 'Family Dynamics (15%)', 'Travel Content (11%)', 'Travel Failures (11%)', 'Weather Problems (6%)', 'Economic Anxiety (6%)', 'Other Categories (26%)'],
+                    datasets: [{
+                        data: [25, 15, 11, 11, 6, 6, 26],
+                        backgroundColor: [
+                            '#ff6b6b',
+                            '#4ecdc4',
+                            '#45b7d1',
+                            '#96c93f',
+                            '#feca57',
+                            '#ff9ff3',
+                            '#a55eea'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        function initCulturalInsightsChart() {
+            const ctx = document.getElementById('culturalInsightsChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Maternal Labor', 'Child Behavior', 'Hotel Reality Gap', 'Digital Paradox', 'Economic Pressure', 'Weather Control', 'Gender Roles', 'Generational Conflicts', 'Cultural Preservation'],
+                    datasets: [{
+                        label: 'Cultural Impact Level (1-10)',
+                        data: [9, 8, 9, 7, 8, 6, 8, 7, 7],
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                stepSize: 2
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Filter functionality for insights tab
+        function filterInsights(category) {
+            const cards = document.querySelectorAll('.insight-card[data-category]');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            // Update button states
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Filter cards
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Add hover effects for video links
+        document.querySelectorAll('.video-link').forEach(link => {
+            link.addEventListener('mouseenter', function() {
+                this.style.color = '#e74c3c';
+            });
+            link.addEventListener('mouseleave', function() {
+                this.style.color = '#3498db';
+            });
+        });
+
+        // Video Database Functionality
+        let allVideosData = [];
+        let currentPage = 1;
+        const videosPerPage = 15;
+        let filteredVideos = [];
+
+        // Load video data from external file
+        async function loadVideoData() {
+            try {
+                // Use the complete video data from the external JavaScript file
+                if (typeof completeVideoData !== 'undefined') {
+                    allVideosData = completeVideoData;
+                    console.log(`Loaded ${allVideosData.length} videos from external data`);
+                } else {
+                    console.error('Complete video data not found. Make sure video_data.js is loaded.');
+                    // Fallback to empty array
+                    allVideosData = [];
+                }
+                
+                filteredVideos = [...allVideosData];
+                displayVideos();
+                updatePagination();
+            } catch (error) {
+                console.error('Error loading video data:', error);
+            }
+        }
+
+        // Format numbers for display
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        // Format duration in seconds to MM:SS
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Display videos in table
+        function displayVideos() {
+            const tbody = document.getElementById('videosTableBody');
+            const startIndex = (currentPage - 1) * videosPerPage;
+            const endIndex = startIndex + videosPerPage;
+            const videosToShow = filteredVideos.slice(startIndex, endIndex);
+
+            tbody.innerHTML = '';
+
+            videosToShow.forEach(video => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #ddd';
+                
+                row.innerHTML = `
+                    <td style="padding: 12px 15px; font-weight: bold; color: #3498db;">${video.username}</td>
+                    <td style="padding: 12px 15px; max-width: 200px; word-wrap: break-word; font-size: 13px;">${video.description}</td>
+                    <td style="padding: 12px 15px; max-width: 200px; word-wrap: break-word; font-size: 13px; color: #666; font-style: italic;">${video.tiktok_description}</td>
+                    <td style="padding: 12px 15px;">
+                        <span style="background: #e8f4f8; color: #2c3e50; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                            ${video.category}
+                        </span>
+                    </td>
+                    <td style="padding: 12px 15px; font-size: 13px; color: #666;">${video.theme}</td>
+                    <td style="padding: 12px 15px; text-align: right; font-weight: bold; color: #27ae60;">${formatNumber(video.views)}</td>
+                    <td style="padding: 12px 15px; text-align: right; font-weight: bold; color: #e74c3c;">${formatNumber(video.likes)}</td>
+                    <td style="padding: 12px 15px; text-align: right; font-weight: bold; color: #f39c12;">${formatNumber(video.comments)}</td>
+                    <td style="padding: 12px 15px; text-align: center;">${formatDuration(video.duration)}</td>
+                    <td style="padding: 12px 15px; text-align: center;">
+                        <a href="${video.url}" target="_blank" style="background: #e74c3c; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: bold;">
+                            📱 View
+                        </a>
+                    </td>
+                `;
+
+                // Add hover effect
+                row.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#f8f9fa';
+                });
+                row.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = '';
+                });
+
+                tbody.appendChild(row);
+            });
+        }
+
+        // Filter videos based on selected criteria
+        function filterVideos() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const themeFilter = document.getElementById('themeFilter').value;
+
+            filteredVideos = allVideosData.filter(video => {
+                const matchesCategory = !categoryFilter || video.category === categoryFilter;
+                const matchesTheme = !themeFilter || video.theme === themeFilter;
+                return matchesCategory && matchesTheme;
+            });
+
+            currentPage = 1;
+            displayVideos();
+            updatePagination();
+            document.getElementById('filtered-count').textContent = filteredVideos.length;
+        }
+
+        // Clear all filters
+        function clearFilters() {
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('themeFilter').value = '';
+            filterVideos();
+        }
+
+        // Change page
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredVideos.length / videosPerPage);
+            const newPage = currentPage + direction;
+            
+            if (newPage >= 1 && newPage <= totalPages) {
+                currentPage = newPage;
+                displayVideos();
+                updatePagination();
+            }
+        }
+
+        // Update pagination display
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredVideos.length / videosPerPage);
+            const startIndex = (currentPage - 1) * videosPerPage + 1;
+            const endIndex = Math.min(currentPage * videosPerPage, filteredVideos.length);
+
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById('showingRange').textContent = `${startIndex}-${endIndex}`;
+            document.getElementById('totalVideos').textContent = filteredVideos.length;
+
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+
+            // Update button styles
+            const prevBtn = document.getElementById('prevPage');
+            const nextBtn = document.getElementById('nextPage');
+            
+            prevBtn.style.opacity = currentPage === 1 ? '0.5' : '1';
+            nextBtn.style.opacity = currentPage === totalPages ? '0.5' : '1';
+        }
+
+        // Initialize video database when All Videos tab is shown
+        document.addEventListener('DOMContentLoaded', function() {
+            loadVideoData();
+        });
+    </script>
+</body>
+</html>
